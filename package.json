@@ -1,0 +1,14 @@
+{
+  "name": "dev.ezhtellar.ai",
+  "version": "0.1.0",
+  "description": "AI behaviors library for unity",
+  "keywords": [
+    "ai",
+    "unity",
+    "hfsm",
+    "behavior",
+    "tree"
+  ],
+  "author": "Jerome Gamo",
+  "license": "ISC"
+}

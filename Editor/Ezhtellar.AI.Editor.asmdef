@@ -1,0 +1,16 @@
+{
+    "name": "Ezhtellar.AI.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:7a364110b9c95da1fa2f62e3fbe5fbab"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
