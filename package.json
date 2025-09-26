@@ -2,6 +2,9 @@
   "name": "dev.ezhtellar.ai",
   "version": "0.1.0",
   "description": "AI behaviors library for unity",
+  "dependencies": {
+    "dev.ezhtellar.funk": "https://github.com/jeromegamo/dev.ezhtellar.funk.git"
+  },
   "keywords": [
     "ai",
     "unity",
