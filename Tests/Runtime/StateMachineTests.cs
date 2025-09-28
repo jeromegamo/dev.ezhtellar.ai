@@ -1,13 +1,13 @@
 using System;
 using Ezhtellar.AI;
 using NUnit.Framework;
+using UnityEditor.VersionControl;
 
 namespace Tests.Runtime
 {
  
     public class StateMachineTests
     {
-    
         [Test]
         public void ShouldThrowIfInitialStateNotFound()
         {
@@ -191,13 +191,13 @@ namespace Tests.Runtime
             rootMachine.Start();
             Assert.AreEqual("Idle", rootMachine.ActiveChild.Name);
             rootMachine.Update();
-            Assert.IsTrue(idleOnExitCalled);
-            Assert.IsTrue(runningOnEnterCalled);
+            Assert.IsTrue(idleOnExitCalled, "idle onExit not called");
+            Assert.IsTrue(runningOnEnterCalled,  "running onEnter not called");
             Assert.AreEqual("Running", rootMachine.ActiveChild.Name);
         }
 
         [Test]
-        public void ShouldTransitionToAnyStateFromLeaf()
+        public void ShouldForceTransitionToAnyStateFromLeaf()
         {
             var movementIdle = new State.Builder()
                 .WithName("Movement.Idle")
@@ -252,7 +252,7 @@ namespace Tests.Runtime
         }
         
         [Test]
-        public void ShouldTransitionToAnyStateFromRoot()
+        public void ShouldForceTransitionToAnyStateFromRoot()
         {
             var movementIdle = new State.Builder()
                 .WithName("Movement.Idle")
@@ -305,5 +305,72 @@ namespace Tests.Runtime
             
             Assert.AreEqual("Attacking", combat.ActiveChild.Name);
         } 
+        
+        [Test]
+        public void ShouldTransitionToAnyStateFromLeaf()
+        {
+            var movementIdle = new State.Builder()
+                .WithName("Movement.Idle")
+                .Build();
+            
+            var running = new State.Builder()
+                .WithName("Running")
+                .Build();
+            
+            var movementState = new State.Builder()
+                .WithName("Movement")
+                .Build();
+            
+            var movement = StateMachine.FromState(movementState);
+            
+            movement.AddState(movementIdle, isInitial: true);
+            movement.AddState(running);
+
+            var combatIdle = new State.Builder()
+                .WithName("Combat.Idle")
+                .Build();
+            var attacking = new State.Builder()
+                .WithName("Attacking")
+                .Build();
+            
+            var combatState = new State.Builder()
+                .WithName("Combat")
+                .Build();
+            
+            var combat = StateMachine.FromState(combatState);
+            
+            combat.AddState(combatIdle, isInitial: true);
+            combat.AddState(attacking);
+            
+            movementIdle.AddTransition(new Transition(attacking, () => true));
+            
+            var rootState = new State.Builder()
+                .WithName("Root")
+                .Build();
+            
+            var rootMachine = StateMachine.FromState(rootState);
+            
+            rootMachine.AddState(movement, isInitial: true);
+            rootMachine.AddState(combat); 
+            
+            rootMachine.Start();
+            
+            Assert.AreEqual("Movement", rootMachine.ActiveChild.Name);
+            Assert.AreEqual("Movement.Idle", movement.ActiveChild.Name);
+           
+            rootMachine.Update();
+            
+            Assert.AreEqual("Attacking", combat.ActiveChild.Name);
+        }  
+            
+        [Test]
+        public void ShouldThrowIfNameIsNotProvided()
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                new State.Builder()
+                    .Build();
+            });
+        }
     }
 }

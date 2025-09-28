@@ -58,9 +58,7 @@ namespace Ezhtellar.AI
             foreach (Transition t in ActiveChild.Transitions)
             {
                 if (!t.Condition()) { continue; }
-                ActiveChild.Stop();
-                ActiveChild = t.Target;
-                ActiveChild.Start();
+                Transition(ActiveChild, t.Target);
                 break;
             }
             
@@ -70,9 +68,8 @@ namespace Ezhtellar.AI
 
         public void Transition(IState to)
         {
-            m_OwnState.Transition(to);
+            Transition(this, to);
         }
-
 
         public void SetParent(IState parent)
         {
@@ -106,6 +103,70 @@ namespace Ezhtellar.AI
         {
             m_OwnState = state;
             m_states = new List<IState>();
+        }
+        
+        private void Transition(IState from, IState to)
+        {
+            var lca = FindLowestCommonAncestor(from, to);
+            
+            Stack<IState> stack = new Stack<IState>();
+            IState currentEnterNode = to;
+            
+            if (lca != null)
+            {
+                // exit from this state up to the lca not including lca
+                IState currentExitNode = from;
+                while (currentExitNode != lca)
+                { 
+                    currentExitNode.Stop(); 
+                    currentExitNode = currentExitNode.Parent; 
+                }
+                
+            }
+            
+            // build the node path from target up to the lca or root
+            // if it is null then it is the root
+            while (currentEnterNode != lca?.Parent)
+            {
+                stack.Push(currentEnterNode); 
+                currentEnterNode = currentEnterNode.Parent;
+            }
+
+            // start all nodes up to the target
+            while (stack.Count > 0)
+            {
+                var state = stack.Pop();
+                if (state is StateMachine machine)
+                {
+                    machine.SetActiveChild(stack.Peek());
+                }
+                state.Start();
+            }
+        }
+
+        private IState FindLowestCommonAncestor(IState from, IState to)
+        {
+            var ancestors = new HashSet<IState>();
+            // walk up the three up to root not including the root
+            IState current = from.Parent;
+            while (current != null)
+            {
+                ancestors.Add(current);
+                current = current.Parent;
+            }
+
+            IState targetAncestor = to.Parent;
+            while (targetAncestor != null)
+            {
+                if (ancestors.Contains(targetAncestor))
+                {
+                    return targetAncestor;
+                }
+
+                targetAncestor = targetAncestor.Parent;
+            }
+
+            return null;
         }
     }
 }

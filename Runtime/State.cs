@@ -10,9 +10,9 @@ namespace Ezhtellar.AI
         private Action m_onUpdate;
         private Action m_onExit;
         private List<Transition> m_transitions;
+        private StateMachine m_parent;
         
         public string Name { get; private set; }
-        private StateMachine m_parent;
         public IState Parent => m_parent;
         public IEnumerable<Transition> Transitions => m_transitions;
         
@@ -51,85 +51,8 @@ namespace Ezhtellar.AI
         
         public void Transition(IState to)
         {
-            var lca = FindLowestCommonAncestor(to);
-            if (lca != null)
-            {
-                // exit from this state up to the lca not including lca
-                IState currentExitNode = this;
-                while (currentExitNode != lca)
-                { 
-                    currentExitNode.Stop(); 
-                    currentExitNode = currentExitNode.Parent; 
-                }
-                
-                Stack<IState> stack = new Stack<IState>();
-                IState currentEnterNode = to;
-                while (currentEnterNode != lca.Parent)
-                {
-                    stack.Push(currentEnterNode); 
-                    currentEnterNode = currentEnterNode.Parent;
-                }
-
-                // start all nodes up to the target
-                while (stack.Count > 0)
-                {
-                    var state = stack.Pop();
-                    if (state is StateMachine machine)
-                    {
-                        machine.SetActiveChild(stack.Peek());
-                    }
-                    state.Start();
-                }
-            }
-            else
-            {
-                // we are in the root
-                Stack<IState> stack = new Stack<IState>();
-                IState currentEnterNode = to;
-                while (currentEnterNode != null)
-                {
-                    stack.Push(currentEnterNode); 
-                    currentEnterNode = currentEnterNode.Parent;
-                }
-
-                // start all nodes up to the target
-                while (stack.Count > 0)
-                {
-                    var state = stack.Pop();
-                    if (state is StateMachine machine)
-                    {
-                        machine.SetActiveChild(stack.Peek());
-                    }
-                    state.Start();
-                } 
-            }
+            m_parent.Transition(to);
         }
-
-        private IState FindLowestCommonAncestor(IState to)
-        {
-            var ancestors = new HashSet<IState>();
-            // walk up the three up to root not including the root
-            IState current = Parent;
-            while (current != null)
-            {
-                ancestors.Add(current); 
-                current = current.Parent;
-            }
-            
-            IState targetAncestor = to.Parent;
-            while (targetAncestor != null)
-            {
-                if (ancestors.Contains(targetAncestor))
-                {
-                    return targetAncestor;
-                }
-                
-                targetAncestor = targetAncestor.Parent;
-            }
-            return null;
-        }
-
-        
         
         public class Builder
         {
@@ -145,6 +68,10 @@ namespace Ezhtellar.AI
             
             public State Build()
             {
+                if (string.IsNullOrEmpty(Name))
+                {
+                    throw new InvalidOperationException($"{nameof(Name)} cannot be empty");
+                }
                 return new State(this);
             }
         }
