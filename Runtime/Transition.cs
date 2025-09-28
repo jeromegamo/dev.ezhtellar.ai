@@ -2,6 +2,7 @@ using System;
 
 namespace Ezhtellar.AI
 {
+    // add OnTransition action
     public class Transition
     {
         public IState Origin { get; private set; }

@@ -11,36 +11,71 @@ namespace Tests.Runtime
         [Test]
         public void ShouldThrowIfInitialStateNotFound()
         {
-            var machine = new StateMachine.Builder()
+            var machineState = new State.Builder()
                 .WithName("Alive")
-                .WithInitialState("Idle")
                 .Build();
+            
+            var machine = StateMachine.FromState(machineState);
         
             Assert.Throws<InvalidOperationException>(() => machine.Start());
+            
+            var idle = new State.Builder()
+                .WithName("Idle")
+                .Build();            
+            
+            machine.AddState(idle);
+            
+            Assert.Throws<InvalidOperationException>(() => machine.Start());
         }
+        
+        [Test]
+        public void ShouldThrowIfInitialStateIsAlreadySet()
+        {
+            var machineState = new State.Builder()
+                .WithName("Alive")
+                .Build();
+            
+            var machine = StateMachine.FromState(machineState);
+            
+            var idle = new State.Builder()
+                .WithName("Idle")
+                .Build();            
+            
+            var running = new State.Builder()
+                .WithName("Running")
+                .Build();            
+            
+            machine.AddState(idle, isInitial: true);
+            
+            Assert.Throws<ArgumentException>(() => 
+                machine.AddState(running, isInitial: true)
+            );
+        }       
         
         [Test]
         public void ShouldCallStateChildOnEnter()
         {
             var childCalled = false;
             var parentCalled = false;
-            var root = new StateMachine.Builder()
+            
+            var rootState = new State.Builder()
                 .WithName("Root")
-                .WithInitialState("Idle")
                 .WithOnEnter(() => { parentCalled = true; })
                 .Build();
+            
+            var rootMachine = StateMachine.FromState(rootState);
 
             var idle = new State.Builder()
                 .WithName("Idle")
                 .WithOnEnter(() => { childCalled = true; })
                 .Build();
             
-            root.AddState(idle);
+            rootMachine.AddState(idle, isInitial: true);
             
             Assert.IsFalse(childCalled);
             Assert.IsFalse(parentCalled);
-            root.Start();
-            Assert.AreEqual("Idle", root.ActiveChild.Name);
+            rootMachine.Start();
+            Assert.AreEqual("Idle", rootMachine.ActiveChild.Name);
             Assert.IsTrue(childCalled);
             Assert.IsTrue(parentCalled);
         }
@@ -57,18 +92,20 @@ namespace Tests.Runtime
                 .WithOnExit(() => { childCalled = true; })
                 .Build();
             
-            var root = new StateMachine.Builder()
+            var rootState = new State.Builder()
                 .WithName("Alive")
-                .WithInitialState("Idle")
                 .WithOnExit(() => { parentCalled = true; })
                 .Build();
             
-            root.AddState(idle);
-            root.Start();
-            Assert.AreEqual("Idle", root.ActiveChild.Name);
+            var rootMachine = StateMachine.FromState(rootState);
+            
+            rootMachine.AddState(idle, isInitial: true);
+            
+            rootMachine.Start();
+            Assert.AreEqual("Idle", rootMachine.ActiveChild.Name);
             Assert.IsFalse(childCalled);
             Assert.IsFalse(parentCalled);
-            root.Stop();
+            rootMachine.Stop();
             Assert.IsTrue(childCalled);
             Assert.IsTrue(parentCalled);
         }
@@ -79,24 +116,25 @@ namespace Tests.Runtime
             var childCalled = false;
             var parentCalled = false;
             
-            var root = new StateMachine.Builder()
+            var rootState = new State.Builder()
                 .WithName("Root")
-                .WithInitialState("Idle")
                 .WithOnUpdate(() => { parentCalled = true; })
                 .Build();
+            
+            var rootMachine = StateMachine.FromState(rootState);
 
             var state = new State.Builder()
                 .WithName("Idle")
                 .WithOnUpdate(() => { childCalled = true; })
                 .Build();
             
-            root.AddState(state);
+            rootMachine.AddState(state, isInitial: true);
             
             Assert.IsFalse(childCalled);
             Assert.IsFalse(parentCalled);
-            root.Start();
-            Assert.AreEqual("Idle", root.ActiveChild.Name);
-            root.Update();
+            rootMachine.Start();
+            Assert.AreEqual("Idle", rootMachine.ActiveChild.Name);
+            rootMachine.Update();
             Assert.IsTrue(childCalled);
             Assert.IsTrue(parentCalled);
         }
@@ -114,11 +152,13 @@ namespace Tests.Runtime
             
             Assert.Throws<InvalidOperationException>(() => running.SetParent(idle));
             
-            var movement = new StateMachine.Builder()
+            var movementState = new State.Builder()
                 .WithName("Movement")
                 .Build();
             
-            Assert.Throws<InvalidOperationException>(() => movement.SetParent(running));
+            var machine = StateMachine.FromState(movementState);
+            
+            Assert.Throws<InvalidOperationException>(() => machine.SetParent(running));
         }
 
         [Test]
@@ -139,24 +179,25 @@ namespace Tests.Runtime
             
             idle.AddTransition(new Transition(running, () => true));
             
-            var root = new StateMachine.Builder()
+            var rootState = new State.Builder()
                 .WithName("Root")
-                .WithInitialState("Idle")
                 .Build();
+           
+            var rootMachine = StateMachine.FromState(rootState);
             
-            root.AddState(idle);
-            root.AddState(running);
+            rootMachine.AddState(idle, isInitial: true);
+            rootMachine.AddState(running);
             
-            root.Start();
-            Assert.AreEqual("Idle", root.ActiveChild.Name);
-            root.Update();
+            rootMachine.Start();
+            Assert.AreEqual("Idle", rootMachine.ActiveChild.Name);
+            rootMachine.Update();
             Assert.IsTrue(idleOnExitCalled);
             Assert.IsTrue(runningOnEnterCalled);
-            Assert.AreEqual("Running", root.ActiveChild.Name);
+            Assert.AreEqual("Running", rootMachine.ActiveChild.Name);
         }
 
         [Test]
-        public void ShouldTransitionToParent()
+        public void ShouldTransitionToAnyStateFromLeaf()
         {
             var movementIdle = new State.Builder()
                 .WithName("Movement.Idle")
@@ -166,12 +207,13 @@ namespace Tests.Runtime
                 .WithName("Running")
                 .Build();
             
-            var movement = new StateMachine.Builder()
+            var movementState = new State.Builder()
                 .WithName("Movement")
-                .WithInitialState("Movement.Idle")
                 .Build();
             
-            movement.AddState(movementIdle);
+            var movement = StateMachine.FromState(movementState);
+            
+            movement.AddState(movementIdle, isInitial: true);
             movement.AddState(running);
 
             var combatIdle = new State.Builder()
@@ -181,30 +223,87 @@ namespace Tests.Runtime
                 .WithName("Attacking")
                 .Build();
             
-            var combat = new StateMachine.Builder()
+            var combatState = new State.Builder()
                 .WithName("Combat")
-                .WithInitialState("Combat.Idle")
                 .Build();
             
-            combat.AddState(combatIdle);
+            var combat = StateMachine.FromState(combatState);
+            
+            combat.AddState(combatIdle, isInitial: true);
             combat.AddState(attacking);
             
-            var root = new StateMachine.Builder()
+            var rootState = new State.Builder()
                 .WithName("Root")
-                .WithInitialState("Movement")
                 .Build();
             
-            root.AddState(movement);
-            root.AddState(combat); 
+            var rootMachine = StateMachine.FromState(rootState);
             
-            root.Start();
+            rootMachine.AddState(movement, isInitial: true);
+            rootMachine.AddState(combat); 
             
-            Assert.AreEqual("Movement", root.ActiveChild.Name);
+            rootMachine.Start();
+            
+            Assert.AreEqual("Movement", rootMachine.ActiveChild.Name);
             Assert.AreEqual("Movement.Idle", movement.ActiveChild.Name);
             
             movementIdle.Transition(attacking);
             
             Assert.AreEqual("Attacking", combat.ActiveChild.Name);
         }
+        
+        [Test]
+        public void ShouldTransitionToAnyStateFromRoot()
+        {
+            var movementIdle = new State.Builder()
+                .WithName("Movement.Idle")
+                .Build();
+            
+            var running = new State.Builder()
+                .WithName("Running")
+                .Build();
+            
+            var movementState = new State.Builder()
+                .WithName("Movement")
+                .Build();
+            
+            var movement = StateMachine.FromState(movementState);
+            
+            movement.AddState(movementIdle, isInitial: true);
+            movement.AddState(running);
+
+            var combatIdle = new State.Builder()
+                .WithName("Combat.Idle")
+                .Build();
+            var attacking = new State.Builder()
+                .WithName("Attacking")
+                .Build();
+            
+            var combatState = new State.Builder()
+                .WithName("Combat")
+                .Build();
+            
+            var combat = StateMachine.FromState(combatState);
+            
+            combat.AddState(combatIdle, isInitial: true);
+            combat.AddState(attacking);
+            
+            var rootState = new State.Builder()
+                .WithName("Root")
+                .Build();
+            
+            var rootMachine = StateMachine.FromState(rootState);
+            
+            rootMachine.AddState(movement, isInitial: true);
+            rootMachine.AddState(combat); 
+            
+            rootMachine.Start();
+            
+            Assert.AreEqual("Movement", rootMachine.ActiveChild.Name);
+            Assert.AreEqual("Movement.Idle", movement.ActiveChild.Name);
+            
+            rootMachine.Transition(attacking);
+            
+            Assert.AreEqual("Attacking", combat.ActiveChild.Name);
+        } 
     }
 }
