@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEditor.VersionControl;
 
@@ -167,6 +168,29 @@ namespace Ezhtellar.AI
             }
 
             return null;
+        }
+
+        public string PrintActivePath()
+        {
+            IState current = this;
+            var path = new List<string>();
+            path.Add(Name);
+            while (current != null)
+            {
+                switch (current)
+                {
+                   case StateMachine machine:
+                       current = machine.ActiveChild;
+                       path.Add(current.Name);
+                       break;
+                   case State:
+                       current = null;
+                       break;
+                }
+            }
+
+            return string.Join(" > ", path.ToArray());
+
         }
     }
 }

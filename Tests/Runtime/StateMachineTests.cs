@@ -361,7 +361,63 @@ namespace Tests.Runtime
             rootMachine.Update();
             
             Assert.AreEqual("Attacking", combat.ActiveChild.Name);
-        }  
+        }
+
+        [Test]
+        public void ShouldPrintActivePath()
+        {
+            var movementIdle = new State.Builder()
+                .WithName("Movement.Idle")
+                .Build();
+            
+            var running = new State.Builder()
+                .WithName("Running")
+                .Build();
+            
+            var movementState = new State.Builder()
+                .WithName("Movement")
+                .Build();
+            
+            var movement = StateMachine.FromState(movementState);
+            
+            movement.AddState(movementIdle, isInitial: true);
+            movement.AddState(running);
+
+            var combatIdle = new State.Builder()
+                .WithName("Combat.Idle")
+                .Build();
+            var attacking = new State.Builder()
+                .WithName("Attacking")
+                .Build();
+            
+            var combatState = new State.Builder()
+                .WithName("Combat")
+                .Build();
+            
+            var combat = StateMachine.FromState(combatState);
+            
+            combat.AddState(combatIdle, isInitial: true);
+            combat.AddState(attacking);
+            
+            movementIdle.AddTransition(new Transition(attacking, () => true));
+            
+            var rootState = new State.Builder()
+                .WithName("Root")
+                .Build();
+            
+            var rootMachine = StateMachine.FromState(rootState);
+            
+            rootMachine.AddState(movement, isInitial: true);
+            rootMachine.AddState(combat); 
+            
+            rootMachine.Start();
+            
+            Assert.AreEqual("Root > Movement > Movement.Idle", rootMachine.PrintActivePath());
+            
+            rootMachine.Update();
+            
+            Assert.AreEqual("Root > Combat > Attacking", rootMachine.PrintActivePath());
+        }
             
         [Test]
         public void ShouldThrowIfNameIsNotProvided()
