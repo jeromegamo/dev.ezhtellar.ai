@@ -1,8 +1,8 @@
 This is a result of studying and making my own implementation of Hierarchical State Machine. Note that this is currently 
-for personal use as it may evolve in the future based on my undertanding and needs. I am currently using this in my own 
-personal project ([dev.ezhtellar.genesis](https://github.com/jeromegamo/dev.ezhtellar.genesis)). There you will see how
-i am using it. You can also check the unit tests for this package. This is a UPM-compatible package and i haven't published
-it yet.
+for personal use as it may evolve in the future based on my undertanding and needs. This is also not battle tested yet in
+terms of performance. I am currently using this in my own personal project ([dev.ezhtellar.genesis](https://github.com/jeromegamo/dev.ezhtellar.genesis)). 
+There you will see how i am using it. You can also check the unit tests for this package. This is a UPM-compatible package 
+and i haven't published it yet.
 
 # How to use
 
