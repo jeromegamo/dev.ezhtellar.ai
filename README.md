@@ -155,6 +155,7 @@ void Update()
         m_lastActivePath = path;
     }
 }
+// output: Player > Movement > Idle
 ```
 
 # Sample
