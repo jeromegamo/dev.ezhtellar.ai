@@ -4,6 +4,14 @@ terms of performance. I am currently using this in my personal project ([dev.ezh
 There you will see how i am using it. You can also check the unit tests for this package. This is a UPM-compatible package 
 and i haven't published it yet.
 
+# Future Plans
+- Add sophisticated visual debugging. For example: Graph View
+- Add Parallel States
+- Add Events
+- Add Behavior Tree
+- Be able to seemlesly combine HFSM and Behavior Tree
+- and many more AI systems!
+
 # How to use
 
 You can create state machines without needing to create a class.
@@ -211,3 +219,7 @@ public void BuildPlayerMachine()
     aliveMachine.AddState(attacking);
 }
 ```
+
+# Book References
+- [Artificial Intelligence for Games by Ian Millington](https://www.amazon.ca/AI-Games-Third-Ian-Millington/dp/1138483974)
+- [Game AI Pro 360 by Steve Rabin](https://www.routledge.com/search?author=Steve%20Rabin)
