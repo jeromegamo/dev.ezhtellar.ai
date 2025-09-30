@@ -16,7 +16,7 @@ and i haven't published it yet.
 
 You can create state machines without needing to create a class.
 
-To only way to build the state is through the builder. This allows to
+The only way to build the state is through the builder. This allows to
 set only what is needed.
 ```csharp
 var idle = new State.Builder()
