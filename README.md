@@ -194,7 +194,7 @@ public void BuildPlayerMachine()
 
     var movingToLocation = new State.Builder()
         .WithName("MovingToLocation")
-        .WithOnEnter(() =>
+        .WithOnUpate(() =>
         {
             if (m_targetMoveLocation.HasValue)
             {
