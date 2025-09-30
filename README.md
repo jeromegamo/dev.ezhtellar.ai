@@ -9,7 +9,7 @@ and i haven't published it yet.
 - Add Parallel States
 - Add Events
 - Add Behavior Tree
-- Be able to seemlesly combine HFSM and Behavior Tree
+- Be able to seamlessly combine HFSM and Behavior Tree
 - and many more AI systems!
 
 # How to use
