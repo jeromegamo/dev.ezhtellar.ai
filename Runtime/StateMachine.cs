@@ -60,7 +60,7 @@ namespace Ezhtellar.AI
             {
                 if (!t.Condition()) { continue; }
                 Transition(ActiveChild, t.Target);
-                break;
+                return;
             }
             
             ActiveChild?.Update();
