@@ -150,8 +150,8 @@ class Player: MonoBehavior
     }
 }
 ```
-Right now, the only debugging helper available is to log the active path. 
-This will be improved in the future.
+~~Right now, the only debugging helper available is to log the active path. 
+This will be improved in the future.~~
 ```csharp
 string m_lastActivePath = "";
 void Update()
@@ -165,6 +165,10 @@ void Update()
 }
 // output: Player > Movement > Idle
 ```
+Active path is now shown in the inspector using property drawer.
+
+https://github.com/user-attachments/assets/c142cbed-ebc0-4dd7-b8bc-e085f6be9002
+
 
 # Sample
 
