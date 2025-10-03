@@ -8,12 +8,13 @@ using UnityEditor.VersionControl;
 
 namespace Ezhtellar.AI
 {
+    [Serializable]
     public class StateMachine: IState
     {
         private List<IState> m_states;
         private IState m_OwnState;
         private IState m_initialState;
-
+        private bool m_isStarted;
         public string Name => m_OwnState.Name;
         public IState Parent => m_OwnState.Parent;
         public IEnumerable<Transition> Transitions => m_OwnState.Transitions;
@@ -29,6 +30,7 @@ namespace Ezhtellar.AI
 
         public void Start()
         {
+            m_isStarted = true;
             if (Parent != null && Parent is StateMachine parent)
             {
                 parent.SetActiveChild(this);
@@ -52,6 +54,7 @@ namespace Ezhtellar.AI
         {
             ActiveChild?.Stop();
             m_OwnState.Stop();
+            m_isStarted = false;
         }
 
         public void Update()
@@ -172,6 +175,8 @@ namespace Ezhtellar.AI
 
         public string PrintActivePath()
         {
+            if (!m_isStarted) { return ""; }
+            
             IState current = this;
             var path = new List<string>();
             path.Add(Name);
